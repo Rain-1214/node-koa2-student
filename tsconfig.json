@@ -1,0 +1,41 @@
+// {
+//   "compilerOptions": {
+//     "target": "es2015",
+//     "module": "commonjs",
+//     "sourceMap": true,
+//     "outDir": "dist",    
+//     "moduleResolution": "node",
+//     "emitDecoratorMetadata": true,
+//     "experimentalDecorators": true,
+//     "removeComments": false,
+//     "noImplicitAny": false
+//   }, 
+//   "includes": [
+//     "app/**/*"
+//   ],
+//   "typeAcquisition": {
+//     "include": [
+//       "sequelize"
+//     ]
+//   }
+// }
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "./dist",
+    "sourceMap": true,
+    "declaration": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2015",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  }
+}
