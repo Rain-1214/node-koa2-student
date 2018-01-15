@@ -64,6 +64,7 @@ const singletonFunction = () => {
 
 export { singletonFunction as Controller };
 export { singletonFunction as Service };
+export { singletonFunction as Tool };
 export { singletonFunction as Dao };
 
 

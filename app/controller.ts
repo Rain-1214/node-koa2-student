@@ -9,23 +9,14 @@ const addRouter = (router: Router, dir?: string) => {
         if (!err && files) {
             files.forEach((value: string) => {
                 if (value.endsWith('.js')) {
-                    const fileJs = require(`${dir}\\${value}`);
-                    runDecorator(fileJs);
+                    const fileJs = require(`${dir}/${value}`);
                 }
             });
             runInject();
-            console.log(singletonWrapper);
             addMapping(router);
         } else {
             console.log(err);
         }
-    });
-};
-
-const runDecorator = (fileJs: any) => {
-    const keyArray = Object.keys(fileJs);
-    keyArray.forEach((className: string) => {
-        const temp = new fileJs[className]();
     });
 };
 
