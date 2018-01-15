@@ -31,7 +31,8 @@ export const ResultMapping = (path: string, method?: string) => {
                 if (pathMapping.has(completePath)) {
                     throw new Error('router path repeat');
                 } else {
-                    pathMapping.set(`${method} ${completePath}`, singletonWrapper.get(className)[name]);
+                    pathMapping.set(`${method} ${completePath}`,
+                        singletonWrapper.get(className)[name].bind(singletonWrapper.get(className)));
                 }
             });
         }
