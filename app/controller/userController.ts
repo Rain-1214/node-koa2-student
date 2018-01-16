@@ -4,6 +4,7 @@ import { UserService } from '../service/userService';
 import { AjaxResult } from '../entity/ajaxResult';
 import { User } from '../entity/User';
 import { Email } from '../entity/email';
+import { Verification } from '../entity/verification';
 
 @Controller()
 @ResultMapping('/user')
@@ -16,6 +17,9 @@ export class UserController {
 
     @Inject('Email')
     private email: Email;
+
+    @Inject('Verification')
+    private verification: Verification;
 
     @ResultMapping('/:id')
     async getUser(ctx: koa.Context, next: () => Promise<any>) {
@@ -45,7 +49,7 @@ export class UserController {
 
     @ResultMapping('/email/send')
     sendEmail(ctx: koa.Context, next: () => Promise<any>) {
-        this.email.send('453430651@qq.com');
+        // this.email.send('453430651@qq.com');
         ctx.body = 'success';
     }
 

@@ -7,7 +7,6 @@ import { Tool } from './inject';
 export class Email {
 
     private emailTransport: email.Transporter;
-    private mailOption: MailOptions = {};
 
     constructor() {
         this.creatTransport();
@@ -15,9 +14,8 @@ export class Email {
 
     creatTransport() {
         this.emailTransport = email.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false, // true for 465, false for other ports
+            host: 'smtp.163.com',
+            secure: true,
             auth: {
                 user: account.user, // generated ethereal user
                 pass: account.pass  // generated ethereal password
@@ -25,20 +23,20 @@ export class Email {
         });
     }
 
-    send(emailAddress: string) {
-        // this.mailOption.from = '"Hellow 👻" <wh_test12138@163.com>';
-        // this.mailOption.to = emailAddress;
-        // this.mailOption.subject = 'Hellow';
-        // this.mailOption.html = '<h1>Hellow</h1>';
-        this.emailTransport.sendMail({
-            from : '"Hellow 👻" <wh_test12138@163.com>',
-            to : emailAddress,
-            subject : 'Hellow',
-            html : '<h1>Hellow</h1>'
-        }, (err: Error, info: any) => {
-            if (err) {
-                throw err;
-            }
+    send(emailAddress: string, subject: string, html: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.emailTransport.sendMail({
+                from : 'NodeJS Test <wh_test12138@163.com>',
+                to : emailAddress,
+                subject : subject,
+                html : html
+            }, (err: Error, info: any) => {
+                if (err) {
+                    throw err;
+                } else {
+                    resolve(info);
+                }
+            });
         });
     }
 

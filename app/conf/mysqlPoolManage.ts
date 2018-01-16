@@ -46,5 +46,20 @@ export class MysqlPoolManage {
         });
     }
 
+    async runSql(sql: string, params?: any[]): Promise<any> {
+        const connection = await this.getConnection();
+        return new Promise((resolve, reject) => {
+            connection.query(sql, params, (err: mysql.MysqlError, rows: any, fields: mysql.FieldInfo[]) => {
+                connection.release();
+                if (err) {
+                    reject(err);
+                    throw err;
+                } else {
+                    resolve(rows);
+                }
+            });
+        });
+    }
+
 }
 
