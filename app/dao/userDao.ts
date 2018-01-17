@@ -29,7 +29,7 @@ export class UserDao {
         return this.mysqlManage.runSql(sql, [page, itemNumber]);
     }
 
-    getConutUserNumber(): Promise<any> {
+    getConutUserNumber(): Promise<number> {
         const sql = this.commonSql.count(mysql.escape('t_user'));
         return this.mysqlManage.runSql(sql);
     }

@@ -10,47 +10,25 @@ import { Verification } from '../entity/verification';
 @ResultMapping('/user')
 export class UserController {
 
-    id = 1;
-
     @Inject('UserService')
     private userService: UserService;
-
-    @Inject('Email')
-    private email: Email;
 
     @Inject('Verification')
     private verification: Verification;
 
-    @ResultMapping('/:id')
-    async getUser(ctx: koa.Context, next: () => Promise<any>) {
-        const id = ctx.params.id;
-        console.log(id);
-        const result = await this.userService.findUserById(id);
-        if (result && result.length !== 0) {
-            ctx.body = new AjaxResult(1, 'success', result);
+    @ResultMapping('/login', 'POST')
+    public async login(ctx: koa.Context, next: () => Promise<any>) {
+        const username = ctx.request.body.username;
+        const password = ctx.request.body.password;
+        const res = await this.userService.login(username, password);
+        ctx.type = 'application/json; charset=utf-8';
+        if (typeof res === 'string') {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, res);
         } else {
-            ctx.state = 404;
+            ctx.state = 200;
+            ctx.body = new AjaxResult(0, 'success', { id: res.id });
         }
-    }
-
-    @ResultMapping('/update/:id')
-    async updateUser(ctx: koa.Context, next: () => Promise<any>) {
-        const id = ctx.params.id;
-        const result = await this.userService.updateUser(id, new User(null, 'bbb'));
-        ctx.body = `${result}`;
-    }
-
-    @ResultMapping('/add/user')
-    async addUser(ctx: koa.Context, next: () => Promise<any>) {
-        const user = new User(null, 'asdf');
-        const result = await this.userService.creatUser(user);
-        ctx.body = result;
-    }
-
-    @ResultMapping('/email/send')
-    sendEmail(ctx: koa.Context, next: () => Promise<any>) {
-        // this.email.send('453430651@qq.com');
-        ctx.body = 'success';
     }
 
 }
