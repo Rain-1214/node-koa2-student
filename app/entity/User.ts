@@ -21,14 +21,7 @@ export class UserState {
     public AUTHOR_NORMAL = 9;
     public AUTHOR_VISITOR = 5;
 
-    private Author = {
-        15: 'root',
-        10: 'vip',
-        9: 'normal',
-        5: 'visitor',
-    };
-
-    private Operation_Author = {
+    public Operation_Author = {
         student: {
             'add': 9,
             'update': 9,
@@ -39,7 +32,15 @@ export class UserState {
         }
     };
 
-    checkAuthor(author: number): { currentAuthor: number, nextAuthor: number, prevAuthor: number } {
+    private Author = {
+        15: 'root',
+        10: 'vip',
+        9: 'normal',
+        5: 'visitor',
+    };
+
+
+    findAuthor(author: number): { currentAuthor: number, nextAuthor: number, prevAuthor: number } {
 
         let currentAuthor, nextAuthor, prevAuthor;
         const tempArray = Object.keys(this.Author).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
@@ -52,6 +53,13 @@ export class UserState {
         });
         return { currentAuthor, nextAuthor, prevAuthor };
 
+    }
+
+    checkAuthor(operationTable: string, operationMehtod: string = 'all', author: number): boolean {
+        if (!operationTable) {
+            throw new Error('check author: operationTable is require');
+        }
+        return author >= this.Operation_Author[operationTable][operationMehtod];
     }
 
 }

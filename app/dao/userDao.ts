@@ -34,6 +34,11 @@ export class UserDao {
         return this.mysqlManage.runSql(sql);
     }
 
+    setNewPassword(username: string, password: string): Promise<any> {
+        const sql = 'update t_user set password = ? where username = ?';
+        return this.mysqlManage.runSql(sql, [password, username]);
+    }
+
     updateUser(id: number, changeProperty: User): Promise<any> {
         let sql = 'update t_user set ';
         const keys = Object.keys(changeProperty);

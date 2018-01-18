@@ -106,7 +106,7 @@ export class UserService {
     async userLeaveUp(id: number): Promise<string> {
         const user = await this.userDao.getUserById(id);
         const currentAuth = user[0].authorization;
-        const authObject = this.userState.checkAuthor(currentAuth);
+        const authObject = this.userState.findAuthor(currentAuth);
         if (!authObject.nextAuthor) {
             return '您的权限已经是最高级别';
         }
@@ -134,23 +134,30 @@ export class UserService {
         return user.length === 0;
     }
 
-    async forgetPassword(username: string): Promise<User> {
+    async forgetPassword(username: string): Promise<string> {
         const user = await this.userDao.getUserByUsername(username);
         if (user.length === 0) {
             return null;
         }
         const info = await this.sendVerificationCode(user[0].email);
-        if (info === 'success') {
-            return user[0];
-        } else {
-            throw new Error('fogetPassword: send email error');
-        }
+        return info;
     }
 
-    async setNewPassword(id: number, password: string): Promise<string> {
-        const changePropertyUser = new User(id, null, password);
-        const res = await this.userDao.updateUser(id, changePropertyUser);
+    async setNewPassword(username: string, password: string): Promise<string> {
+        const res = await this.userDao.setNewPassword(username, password);
         return res.changedRows === 1 ? 'success' : 'set new password fail';
+    }
+
+    async getUser(userId: number, page: number, itemNum: number): Promise<User[] | string> {
+        const user = await this.userDao.getUserById(userId);
+        if (user.length === 0) {
+            return 'not find user';
+        }
+        const currentAuth = user[0].authorization;
+        if (!this.userState.checkAuthor('user', null, currentAuth)) {
+            return 'have not authorization';
+        }
+        return await this.userDao.getUser(page, itemNum);
     }
 
 }
