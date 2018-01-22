@@ -32,6 +32,17 @@ const addMapping = (router: Router) => {
         } else if (key.startsWith('POST ')) {
             const path = key.slice(5);
             router.post(path, value);
+        } else if (key.startsWith('PUT ')) {
+            const path = key.slice(4);
+            router.put(path, value);
+        } else if (key.startsWith('DELETE ')) {
+            const path = key.slice(7);
+            router.delete(path, value);
+        } else if (key.startsWith('HEAD ')) {
+            const path = key.slice(5);
+            router.head(path, value);
+        } else {
+            throw new Error('invalid request method name');
         }
     });
 

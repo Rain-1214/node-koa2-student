@@ -36,7 +36,7 @@ export class UserService {
         }
         if (user.length !== 0) {
             const decryptPass = this.encryption.decrypt(user[0].password);
-            return decryptPass === password ? user[0] : '密码不正确';
+            return decryptPass === password ? user[0].userState === this.userState.USER_CAN_USE ? user[0] : '您的帐号已经被停封' : '密码不正确';
         }
     }
 
@@ -119,7 +119,11 @@ export class UserService {
         }
     }
 
-    async deactivedUser(id: number): Promise<string> {
+    async deactivatedUser(userId: number, id: number): Promise<string> {
+        const checkUserAuthorRes = await this.checkUserAuthor(userId);
+        if (typeof checkUserAuthorRes === 'string') {
+            return checkUserAuthorRes;
+        }
         const changePropertyUser = new User(null, null, null, null, null, this.userState.USER_ALREADY_DEACTIVATED);
         const res = await this.userDao.updateUser(id, changePropertyUser);
         if (res.changedRows === 1) {
@@ -129,6 +133,21 @@ export class UserService {
         }
     }
 
+    async activeedUser(userId: number, changeUserId: number): Promise<string> {
+        const checkUserAuthorRes = await this.checkUserAuthor(userId);
+        if (typeof checkUserAuthorRes === 'string') {
+            return checkUserAuthorRes;
+        }
+        const changePropertyUser = new User(null, null, null, null, null, this.userState.USER_CAN_USE);
+        const res = await this.userDao.updateUser(changeUserId, changePropertyUser);
+        if (res.changedRows === 1) {
+            return 'success';
+        } else {
+            return 'fail';
+        }
+    }
+
+
     async checkUsernameCanUser(username: string): Promise<boolean> {
         const user = await this.userDao.getUserByUsername(username);
         return user.length === 0;
@@ -137,7 +156,7 @@ export class UserService {
     async forgetPassword(username: string): Promise<string> {
         const user = await this.userDao.getUserByUsername(username);
         if (user.length === 0) {
-            return null;
+            return '用户名不存在';
         }
         const info = await this.sendVerificationCode(user[0].email);
         return info;
@@ -149,15 +168,27 @@ export class UserService {
     }
 
     async getUser(userId: number, page: number, itemNum: number): Promise<User[] | string> {
+        const checkUserAuthorRes = await this.checkUserAuthor(userId);
+        if (typeof checkUserAuthorRes === 'string') {
+            return checkUserAuthorRes;
+        }
+        const users = await this.userDao.getUser(page, itemNum);
+        users.forEach(e => {
+            delete e.password;
+        });
+        return users;
+    }
+
+    async checkUserAuthor(userId: number): Promise<string | boolean> {
         const user = await this.userDao.getUserById(userId);
         if (user.length === 0) {
             return 'not find user';
         }
         const currentAuth = user[0].authorization;
-        if (!this.userState.checkAuthor('user', null, currentAuth)) {
+        if (!this.userState.checkAuthor('user', undefined, currentAuth)) {
             return 'have not authorization';
         }
-        return await this.userDao.getUser(page, itemNum);
+        return true;
     }
 
 }

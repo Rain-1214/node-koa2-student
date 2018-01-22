@@ -48,10 +48,23 @@ export class UserController {
         }
     }
 
+    @ResultMapping('/register', 'POST')
+    public async register(ctx: koa.Context, next: () => Promise<any>) {
+        const { username, password, email, code } = ctx.request.body;
+        const res = await this.userService.register(username, password, email, code);
+        if (res === 'success') {
+            return new AjaxResult(1, 'success');
+        } else {
+            return new AjaxResult(0, res);
+        }
+    }
+
     @ResultMapping('/getUser')
     public async getUser(ctx: koa.Context, next: () => Promise<any>) {
         const userId = ctx.session.uid;
-        const { page, itemNumber } = ctx.params;
+        let { page, itemNumber } = ctx.query;
+        page = +page;
+        itemNumber = +itemNumber;
         if (!userId) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'must login');
@@ -60,6 +73,8 @@ export class UserController {
         ctx.state = 200;
         ctx.response.body = new AjaxResult(1, 'success', res);
     }
+
+    
 
 }
 
