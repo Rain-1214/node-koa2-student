@@ -29,14 +29,9 @@ export class UserDao {
         return this.mysqlManage.runSql(sql, [page, itemNumber]);
     }
 
-    getConutUserNumber(): Promise<number> {
-        const sql = this.commonSql.count(mysql.escape('t_user'));
+    getConutUserNumber(): Promise<{countNum: number}[]> {
+        const sql = this.commonSql.count('t_user');
         return this.mysqlManage.runSql(sql);
-    }
-
-    setNewPassword(username: string, password: string): Promise<any> {
-        const sql = 'update t_user set password = ? where username = ?';
-        return this.mysqlManage.runSql(sql, [password, username]);
     }
 
     updateUser(id: number, changeProperty: User): Promise<any> {

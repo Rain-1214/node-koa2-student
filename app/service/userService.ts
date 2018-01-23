@@ -119,13 +119,13 @@ export class UserService {
         }
     }
 
-    async deactivatedUser(userId: number, id: number): Promise<string> {
+    async deactivatedUser(userId: number, disableUserId: number): Promise<string> {
         const checkUserAuthorRes = await this.checkUserAuthor(userId);
         if (typeof checkUserAuthorRes === 'string') {
             return checkUserAuthorRes;
         }
         const changePropertyUser = new User(null, null, null, null, null, this.userState.USER_ALREADY_DEACTIVATED);
-        const res = await this.userDao.updateUser(id, changePropertyUser);
+        const res = await this.userDao.updateUser(disableUserId, changePropertyUser);
         if (res.changedRows === 1) {
             return 'success';
         } else {
@@ -153,21 +153,23 @@ export class UserService {
         return user.length === 0;
     }
 
-    async forgetPassword(username: string): Promise<string> {
+    async forgetPassword(username: string): Promise<User | string> {
         const user = await this.userDao.getUserByUsername(username);
         if (user.length === 0) {
             return '用户名不存在';
         }
         const info = await this.sendVerificationCode(user[0].email);
-        return info;
+        return info === 'success' ? user[0] : info;
     }
 
-    async setNewPassword(username: string, password: string): Promise<string> {
-        const res = await this.userDao.setNewPassword(username, password);
+    async setNewPassword(userId: number, password: string): Promise<string> {
+        const encryptPassword = this.encryption.encrypt(password);
+        const changePropertyUser = new User(null, null, encryptPassword);
+        const res = await this.userDao.updateUser(userId, changePropertyUser);
         return res.changedRows === 1 ? 'success' : 'set new password fail';
     }
 
-    async getUser(userId: number, page: number, itemNum: number): Promise<User[] | string> {
+    async getUser(userId: number, page: number, itemNum: number): Promise<{ users: User[], userCountNumber: number } | string> {
         const checkUserAuthorRes = await this.checkUserAuthor(userId);
         if (typeof checkUserAuthorRes === 'string') {
             return checkUserAuthorRes;
@@ -176,7 +178,11 @@ export class UserService {
         users.forEach(e => {
             delete e.password;
         });
-        return users;
+        const userCountNumber = await this.userDao.getConutUserNumber();
+        if (userCountNumber.length === 0) {
+            throw new Error('not find userCountNumber');
+        }
+        return { users, userCountNumber: userCountNumber[0].countNum };
     }
 
     async checkUserAuthor(userId: number): Promise<string | boolean> {

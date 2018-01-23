@@ -4,7 +4,7 @@ import { Tool } from './inject';
 export class CommonSql {
 
     count(table: string): string {
-        return `select count(1) from ${table}`;
+        return `select count(1) as countNum from ${table}`;
     }
 
 }

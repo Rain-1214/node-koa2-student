@@ -2,6 +2,7 @@ import { StudentDao } from '../dao/studentDao';
 import { Inject } from '../entity/inject';
 import { Student } from '../entity/student';
 import { Grade } from '../entity/grade';
+import { UserState } from '../entity/User';
 
 
 export class StudentService {
@@ -9,7 +10,10 @@ export class StudentService {
     @Inject('StudentDao')
     private studentDao: StudentDao;
 
-    async addStudent(student: Student): Promise<number> {
+    @Inject('UserState')
+    private userState: UserState;
+
+    async addStudent(uid: number, student: Student): Promise<number> {
         const res = await this.studentDao.addStudent(student);
         return res.affectedRows;
     }
@@ -30,6 +34,11 @@ export class StudentService {
         return res.affectedRows;
     }
 
+    async deleteStudents(ids: number[]): Promise<number> {
+        const res = await this.studentDao.deleteStudents(ids);
+        return res.affectedRows;
+    }
+
     async getGrade(): Promise<Grade[]> {
         const grades = await this.studentDao.getGrade();
         grades.forEach(async (e) => {
@@ -39,12 +48,16 @@ export class StudentService {
         return grades;
     }
 
-    async getStudnet(gradeId: number, classId: number): Promise<Student[]> {
+    async getStudentByGradeAndClass(gradeId: number, classId: number): Promise<Student[]> {
         return this.studentDao.getStudentByClassOrGrade(gradeId, classId);
     }
 
     async getStudents(page: number): Promise<Student[]> {
         return this.studentDao.getStudent(page, 8);
+    }
+
+    private checkUserAuthor() {
+
     }
 
 }

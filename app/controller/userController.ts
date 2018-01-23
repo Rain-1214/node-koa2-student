@@ -48,15 +48,13 @@ export class UserController {
         }
     }
 
-    @ResultMapping('/register', 'POST')
+    @ResultMapping('/register', 'PUT')
     public async register(ctx: koa.Context, next: () => Promise<any>) {
         const { username, password, email, code } = ctx.request.body;
         const res = await this.userService.register(username, password, email, code);
-        if (res === 'success') {
-            return new AjaxResult(1, 'success');
-        } else {
-            return new AjaxResult(0, res);
-        }
+        const resultState = res === 'success' ? 1 : 0;
+        ctx.state = resultState;
+        ctx.response.body = new AjaxResult(resultState, res);
     }
 
     @ResultMapping('/getUser')
@@ -74,7 +72,83 @@ export class UserController {
         ctx.response.body = new AjaxResult(1, 'success', res);
     }
 
-    
+    @ResultMapping('/forgetPass', 'POST')
+    public async forgetPassword(ctx: koa.Context, next: () => Promise<any>) {
+        const username = ctx.request.body.username;
+        const res = await this.userService.forgetPassword(username);
+        if (typeof res === 'string') {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, res);
+        } else {
+            ctx.session.forgetPassUserId = res.id;
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(1, 'success', res.email);
+        }
+    }
+
+    @ResultMapping('/setNewPass', 'POST')
+    public async setNewPass(ctx: koa.Context, next: () => Promise<any>) {
+        const password = ctx.request.body.password;
+        const forgetPassUserId = ctx.session.forgetPassUserId;
+        if (!forgetPassUserId) {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, 'not find userId');
+        }
+        const res = await this.userService.setNewPassword(forgetPassUserId, password);
+        const resultState = res === 'success' ? 1 : 0;
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(resultState, res);
+    }
+
+    @ResultMapping('/disableUser', 'POST')
+    public async disableUser(ctx: koa.Context, next: () => Promise<any>) {
+        const disableUserId = ctx.request.body.userId;
+        const uid = ctx.session.uid;
+        if (!uid) {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, 'must login');
+        }
+        const res = await this.userService.deactivatedUser(uid, disableUserId);
+        const resultState = res === 'success' ? 1 : 0;
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(resultState, res);
+    }
+
+    @ResultMapping('/activeUser', 'POST')
+    public async activeUser(ctx: koa.Context, next: () => Promise<any>) {
+        const activeUserId = ctx.request.body.userId;
+        const uid = ctx.session.uid;
+        if (!uid) {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, 'Lack of essential property');
+        }
+        const res = await this.userService.activeedUser(uid, activeUserId);
+        const resultState = res === 'success' ? 1 : 0;
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(resultState, res);
+    }
+
+    @ResultMapping('/checkUsername', 'POST')
+    public async checkUsernameCanUser(ctx: koa.Context, next: () => Promise<any>) {
+        const username = ctx.request.body.username;
+        const res = await this.userService.checkUsernameCanUser(username);
+        const message = res ? '用户名可用' : '用户名不可用';
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(1, message);
+    }
+
+
+    public async leaveUpUserAuthor(ctx: koa.Context, next: () => Promise<any>) {
+        const uid = ctx.session.uid;
+        if (!uid) {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, 'Lack of essential property');
+        }
+        const res = await this.userService.userLeaveUp(uid);
+        const resultState = res === 'success' ? 1 : 0;
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(resultState, res);
+    }
 
 }
 
