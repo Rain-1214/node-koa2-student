@@ -44,14 +44,7 @@ export class StudentDao {
         return this.sqyPool.runSql(sql, [gradeId]);
     }
 
-    addStudent(student: Student): Promise<any> {
-        const sql = `insert into t_student values(null,${mysql.escape(student.name)},${mysql.escape(student.studentNumber)}
-                   ${mysql.escape(student.sex)},${mysql.escape(student.classId)},${mysql.escape(student.gradeId)})`;
-        const newSql = sql.replace(/undefined/g, 'null');
-        return this.sqyPool.runSql(newSql);
-    }
-
-    addStudents(students: Student[]): Promise<any> {
+    addStudent(students: Student[]): Promise<any> {
         let sql = 'insert into t_student values';
         students.forEach((e, i) => {
             sql += `(null,${mysql.escape(e.name)},${mysql.escape(e.studentNumber)}

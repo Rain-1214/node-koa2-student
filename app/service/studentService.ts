@@ -13,13 +13,8 @@ export class StudentService {
     @Inject('UserState')
     private userState: UserState;
 
-    async addStudent(uid: number, student: Student): Promise<number> {
-        const res = await this.studentDao.addStudent(student);
-        return res.affectedRows;
-    }
-
-    async addStudents(students: Student[]): Promise<number> {
-        const res = await this.studentDao.addStudents(students);
+    async addStudent(uid: number, students: Student[]): Promise<number> {
+        const res = await this.studentDao.addStudent(students);
         return res.affectedRows;
     }
 
@@ -57,7 +52,6 @@ export class StudentService {
     }
 
     private checkUserAuthor() {
-
     }
 
 }
