@@ -61,7 +61,8 @@ export class UserService {
     async creatCode(emailAddress: string): Promise<Code> {
         const codeNum = Math.floor(Math.random() * 1000000);
         const codeStr = `${codeNum}`.padStart(6, '0');
-        const code = new Code(null, codeStr, this.codeState.CODE_CAN_USE, new Date().getTime(), emailAddress);
+        const creatTime = Math.floor(new Date().getTime() / 1000);
+        const code = new Code(null, codeStr, this.codeState.CODE_CAN_USE, creatTime, emailAddress);
         const res = await this.codeDao.creatCode(code);
         if (res.affectedRows !== 1) {
             throw new Error('creat Code fail');

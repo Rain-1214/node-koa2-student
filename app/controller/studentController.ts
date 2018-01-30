@@ -2,6 +2,8 @@ import * as koa from 'koa';
 import { Controller, ResultMapping, Inject } from '../entity/inject';
 import { StudentService } from '../service/studentService';
 import { AjaxResult } from '../entity/ajaxResult';
+import { Student } from '../entity/student';
+import { Verification } from '../entity/verification';
 
 
 @Controller()
@@ -10,6 +12,9 @@ export class StudentController {
 
     @Inject('StudentServoce')
     private studentService: StudentService;
+
+    @Inject('Verification')
+    private verification: Verification;
 
     @ResultMapping('/getGrade')
     public async getGrade(ctx: koa.Context, next: () => Promise<any>) {
@@ -37,8 +42,46 @@ export class StudentController {
         ctx.response.body = new AjaxResult(1, 'success', res);
     }
 
+    @ResultMapping('/addStudent', 'PUT')
     public async addStudent(ctx: koa.Context, next: () => Promise<any>) {
+        this.checkUserLogin(ctx);
+        const uid = ctx.session.uid;
+        const students: Student[] = ctx.request.body.students;
+        this.checkParams(students, ctx);
+        const res = await this.studentService.addStudent(uid, students);
+        this.returnResponse(res, ctx);
+    }
 
+    @ResultMapping('/updateStudent', 'POST')
+    public async updateStudent(ctx: koa.Context, next: () => Promise<any>) {
+        this.checkUserLogin(ctx);
+        const uid = ctx.session.uid;
+        const { id, name, studentNumber, sex, classNum, grade } = ctx.request.body;
+        this.checkParams([id, name, studentNumber, sex, classNum, grade], ctx);
+        const res = await this.studentService.updateStudent(uid, id, name, studentNumber, sex, classNum, grade);
+        this.returnResponse(res, ctx);
+    }
+
+    @ResultMapping('/deleyeStudeny', 'DELETE')
+    public async deleteStudent(ctx: koa.Context, next: () => Promise<any>) {
+        this.checkUserLogin(ctx);
+        const uid = ctx.session.uid;
+        const { id } = ctx.request.body;
+        this.checkParams([ id ], ctx);
+        const res = await this.studentService.deleteStudent(uid, id);
+        this.returnResponse(res, ctx);
+    }
+
+    private returnResponse(res: string | number, ctx: koa.Context) {
+        if (typeof res === 'string') {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, res);
+        } else if (res === 0) {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, 'add student fail');
+        }
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(1, 'success');
     }
 
     private checkUserLogin(ctx: koa.Context) {
@@ -47,7 +90,16 @@ export class StudentController {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'Lack of essential property');
         }
+    }
 
+    private checkParams(params: any, ctx: koa.Context) {
+        if (params.some(e => {
+            const value = Object.values(e);
+            return this.verification.require(value);
+        })) {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, 'invalid arguments');
+        }
     }
 
 }

@@ -9,6 +9,11 @@ export class Verification {
         return reg.test(emailAddress);
     }
 
+    require(...arg: any[]): boolean {
+        return arg.every((e) => {
+           return e !== null && e !== undefined && e !== '';
+        });
+    }
 
 }
 

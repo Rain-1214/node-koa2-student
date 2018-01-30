@@ -47,7 +47,7 @@ export class UserDao {
     }
 
     creatUser(user: User): Promise<any> {
-        let sql = 'insert into t_user values(null,';
+        let sql = 'insert into t_user values(';
         const keys = Object.keys(user);
         keys.forEach((e, i) => {
             sql += user[e] ? mysql.escape(user[e]) : 'null';

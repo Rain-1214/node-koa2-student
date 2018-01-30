@@ -1,10 +1,11 @@
 import * as mysql from 'mysql';
 import { MysqlPoolManage } from '../conf/mysqlPoolManage';
-import { Inject } from '../entity/inject';
+import { Inject, Dao } from '../entity/inject';
 import { Student } from '../entity/student';
 import { Grade } from '../entity/grade';
 import { ClassNum } from '../entity/class';
 
+@Dao()
 export class StudentDao {
 
     @Inject('MysqlPoolManage')
@@ -15,23 +16,14 @@ export class StudentDao {
         return this.sqyPool.runSql(sql, [page, itemNumber]);
     }
 
-    getStudentByClassOrGrade(grade?: number, classNum?: number): Promise<Student[]> {
-        if (!grade && !classNum) {
-            throw new Error('both of grade and classnum is null');
-        }
-        let sql = 'select * from t_student where ';
-        const params = [];
-        if (grade) {
-            sql += `gradeId = ${mysql.escape(grade)}`;
-            params.push(grade);
-        }
-
+    getStudentByClassOrGrade(grade: number, classNum?: number): Promise<Student[]> {
+        let sql = 'select * from t_student where gradeId = ?';
+        const params = [grade];
         if (classNum) {
             sql += ` and classId = ${mysql.escape(classNum)}`;
             params.push(classNum);
         }
-
-        return this.sqyPool.runSql(sql, [grade, classNum]);
+        return this.sqyPool.runSql(sql, params);
     }
 
     getGrade(): Promise<Grade[]> {
@@ -70,12 +62,7 @@ export class StudentDao {
         return this.sqyPool.runSql(sql);
     }
 
-    deleteStudent(id: number): Promise<any> {
-        const sql = 'delete from t_student where id = ?';
-        return this.sqyPool.runSql(sql, [id]);
-    }
-
-    deleteStudents(ids: number[]): Promise<any> {
+    deleteStudent(ids: number[]): Promise<any> {
         let sql = 'delete from t_student where id = ';
         ids.forEach((e, i) => {
             sql += mysql.escape(e);

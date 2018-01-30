@@ -10,7 +10,8 @@ export class CodeDao {
     private sqlPool: MysqlPoolManage;
 
     creatCode(code: Code): Promise<any> {
-        const sql = `insert into t_code values(null,${mysql.escape(code.code)},${mysql.escape(code.state)},${mysql.escape(code.time)})`;
+        const sql = `insert into t_code values(null,
+            ${mysql.escape(code.code)},${mysql.escape(code.state)},${mysql.escape(code.time)},${mysql.escape(code.email)})`;
         return this.sqlPool.runSql(sql);
     }
 
@@ -26,6 +27,8 @@ export class CodeDao {
 
     updateCodeState(id: number, codeState: number): Promise<any> {
         const sql = 'update t_code set state = ? where id = ?';
+        console.log(id);
+        console.log(codeState);
         return this.sqlPool.runSql(sql, [codeState, id]);
     }
 
