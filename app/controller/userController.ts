@@ -28,10 +28,10 @@ export class UserController {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, res);
         } else {
-            const uid = this.encryption.encrypt(`${res.id}`);
+            const uid = res.id;
             ctx.state = 200;
             ctx.session.uid = res.id;
-            ctx.response.body = new AjaxResult(0, 'success');
+            ctx.response.body = new AjaxResult(1, 'success');
         }
     }
 
@@ -133,8 +133,9 @@ export class UserController {
         const username = ctx.request.body.username;
         const res = await this.userService.checkUsernameCanUser(username);
         const message = res ? '用户名可用' : '用户名不可用';
+        const stateCode = res ? 1 : 0;
         ctx.state = 200;
-        ctx.response.body = new AjaxResult(1, message);
+        ctx.response.body = new AjaxResult(stateCode, message);
     }
 
 

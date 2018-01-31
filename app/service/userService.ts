@@ -31,6 +31,7 @@ export class UserService {
 
     async login(username: string, password: string): Promise<string | User> {
         const user = await this.userDao.getUserByUsername(username);
+        // console.log(this.encryption.decrypt(user[0].password));
         if (user.length === 0) {
             return '用户不存在';
         }
