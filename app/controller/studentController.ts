@@ -7,7 +7,7 @@ import { Verification } from '../entity/verification';
 
 
 @Controller()
-@ResultMapping('/student')
+@ResultMapping('/api/student')
 export class StudentController {
 
     @Inject('StudentServoce')

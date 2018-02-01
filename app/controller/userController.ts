@@ -8,7 +8,7 @@ import { Verification } from '../entity/verification';
 import { Encryption } from '../entity/encryption';
 
 @Controller()
-@ResultMapping('/user')
+@ResultMapping('/api/user')
 export class UserController {
 
     @Inject('UserService')
