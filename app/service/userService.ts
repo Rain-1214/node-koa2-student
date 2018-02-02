@@ -46,19 +46,6 @@ export class UserService {
         return code.length === 0 ? null : code[0];
     }
 
-    async checkCode(code: Code): Promise<boolean> {
-        const codeIsValid = this.codeState.checkCodeTimeIsValid(code);
-        if (!codeIsValid) {
-            const res = await this.codeDao.updateCodeState(code.id, this.codeState.CODE_ALREADY_INVALID);
-            if (res.changedRows === 1) {
-                return false;
-            } else {
-                throw new Error('update CodeState error');
-            }
-        }
-        return true;
-    }
-
     async creatCode(emailAddress: string): Promise<Code> {
         const codeNum = Math.floor(Math.random() * 1000000);
         const codeStr = `${codeNum}`.padStart(6, '0');
@@ -72,20 +59,22 @@ export class UserService {
         }
     }
 
-    async sendVerificationCode(emailAddress: string): Promise<string> {
-        let code = await this.getCode(emailAddress);
-        code = code ? await this.checkCode(code) ? code : await this.creatCode(emailAddress) : await this.creatCode(emailAddress);
-        const info = await this.email.send(emailAddress, '验证码', `<p>【NODEJS】 您的验证码为 ${code.code} </p>`);
-        if (info) {
-            return 'success';
-        } else {
-            return 'send email fail';
+    async checkCodeValid(code: Code): Promise<boolean> {
+        const codeIsValid = this.codeState.checkCodeTimeIsValid(code);
+        if (!codeIsValid) {
+            const res = await this.codeDao.updateCodeState(code.id, this.codeState.CODE_ALREADY_INVALID);
+            if (res.changedRows === 1) {
+                return false;
+            } else {
+                throw new Error('update CodeState error');
+            }
         }
+        return true;
     }
 
-    async register(username: string, password: string, emailAddress: string, codeStr: string): Promise<string> {
+    async checkCodeRight(emailAddress: string, codeStr: string): Promise<string> {
         const code = await this.getCode(emailAddress);
-        if (!await this.checkCode(code)) {
+        if (!await this.checkCodeValid(code)) {
             return '验证码已经过期，请重新获取';
         }
         if (code.code !== codeStr) {
@@ -95,11 +84,30 @@ export class UserService {
         if (updateCodeRes.changedRows !== 1) {
             throw new Error('update CodeState error');
         }
+        return 'success';
+    }
+
+    async sendVerificationCode(emailAddress: string): Promise<string> {
+        let code = await this.getCode(emailAddress);
+        code = code ? await this.checkCodeValid(code) ? code : await this.creatCode(emailAddress) : await this.creatCode(emailAddress);
+        const info = await this.email.send(emailAddress, '验证码', `<p>【NODEJS】 您的验证码为 ${code.code} </p>`);
+        if (info) {
+            return 'success';
+        } else {
+            return 'send email fail';
+        }
+    }
+
+    async register(username: string, password: string, emailAddress: string, codeStr: string): Promise<string> {
+        const codeRightFlag = await this.checkCodeRight(emailAddress, codeStr);
+        if (codeRightFlag !== 'success') {
+            return codeRightFlag;
+        }
         const cryptedPass = this.encryption.encrypt(password);
         const user = new User(null, username, cryptedPass, emailAddress, this.userState.AUTHOR_VISITOR, this.userState.USER_CAN_USE);
         const res = await this.userDao.creatUser(user);
         if (res.affectedRows === 1) {
-            return 'success';
+            return res.insertId;
         } else {
             return 'register fail';
         }
@@ -150,7 +158,7 @@ export class UserService {
     }
 
 
-    async checkUsernameCanUser(username: string): Promise<boolean> {
+    async checkUsernameCanUse(username: string): Promise<boolean> {
         const user = await this.userDao.getUserByUsername(username);
         return user.length === 0;
     }

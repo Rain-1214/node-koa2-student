@@ -6,6 +6,7 @@ import { User } from '../entity/User';
 import { Email } from '../entity/email';
 import { Verification } from '../entity/verification';
 import { Encryption } from '../entity/encryption';
+import { LogMessage } from '../entity/log';
 
 @Controller()
 @ResultMapping('/api/user')
@@ -20,6 +21,9 @@ export class UserController {
     @Inject('Encryption')
     private encryption: Encryption;
 
+    @Inject('LogMessage')
+    private log: LogMessage;
+
     @ResultMapping('/login', 'POST')
     public async login(ctx: koa.Context, next: () => Promise<any>) {
         const { username, password } = ctx.request.body;
@@ -33,6 +37,20 @@ export class UserController {
             ctx.session.uid = res.id;
             ctx.response.body = new AjaxResult(1, 'success');
         }
+    }
+
+    @ResultMapping('/logout')
+    public async logout(ctx: koa.Context, next: () => Promise<any>) {
+        const uid = ctx.session.uid;
+        if (!uid) {
+            this.log.logMessage('没有找到登录信息，无法登出');
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, 'have not login information');
+        }
+        this.log.logMessage(`用户ID${ctx.session.uid}登出`);
+        delete ctx.sessiond.uid;
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(1, 'success');
     }
 
     @ResultMapping('/getEmailCode', 'POST')
@@ -52,8 +70,12 @@ export class UserController {
     public async register(ctx: koa.Context, next: () => Promise<any>) {
         const { username, password, email, code } = ctx.request.body;
         const res = await this.userService.register(username, password, email, code);
-        const resultState = res === 'success' ? 1 : 0;
-        ctx.state = resultState;
+        const resultState = typeof res === 'number' ? 1 : 0;
+        if (resultState) {
+            ctx.session.uid = res;
+            this.log.logMessage(`新用户ID：${ctx.session.uid}`);
+        }
+        ctx.state = 200;
         ctx.response.body = new AjaxResult(resultState, res);
     }
 
@@ -80,22 +102,37 @@ export class UserController {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, res);
         } else {
-            ctx.session.forgetPassUserId = res.id;
+            ctx.session.forgetPass = { id: res.id, email: res.email };
+            const returnEmail = this.encryption.encryptEmail(res.email);
             ctx.state = 200;
-            ctx.response.body = new AjaxResult(1, 'success', res.email);
+            ctx.response.body = new AjaxResult(1, 'success', returnEmail);
         }
+    }
+
+    @ResultMapping('/checkForgetPassCode', 'POST')
+    public async checkForgetPassCode(ctx: koa.Context, next: () => Promise<any>) {
+        const code = ctx.request.body.code;
+        const email = ctx.session.forgetPass.email;
+        const res = await this.userService.checkCodeRight(email, code);
+        const resultState = res === 'success' ? 1 : 0;
+        ctx.state = 200;
+        ctx.response.body = new AjaxResult(resultState, res);
     }
 
     @ResultMapping('/setNewPass', 'POST')
     public async setNewPass(ctx: koa.Context, next: () => Promise<any>) {
         const password = ctx.request.body.password;
-        const forgetPassUserId = ctx.session.forgetPassUserId;
+        const forgetPassUserId = ctx.session.forgetPass.id;
+        console.log(password, forgetPassUserId);
         if (!forgetPassUserId) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'not find userId');
         }
         const res = await this.userService.setNewPassword(forgetPassUserId, password);
         const resultState = res === 'success' ? 1 : 0;
+        if (resultState) {
+            delete ctx.session.forgetPass;
+        }
         ctx.state = 200;
         ctx.response.body = new AjaxResult(resultState, res);
     }
@@ -131,14 +168,14 @@ export class UserController {
     @ResultMapping('/checkUsername', 'POST')
     public async checkUsernameCanUser(ctx: koa.Context, next: () => Promise<any>) {
         const username = ctx.request.body.username;
-        const res = await this.userService.checkUsernameCanUser(username);
+        const res = await this.userService.checkUsernameCanUse(username);
         const message = res ? '用户名可用' : '用户名不可用';
         const stateCode = res ? 1 : 0;
         ctx.state = 200;
         ctx.response.body = new AjaxResult(stateCode, message);
     }
 
-
+    @ResultMapping('/leaveUpUser', 'POST')
     public async leaveUpUserAuthor(ctx: koa.Context, next: () => Promise<any>) {
         const uid = ctx.session.uid;
         if (!uid) {

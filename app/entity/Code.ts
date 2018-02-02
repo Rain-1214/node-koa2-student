@@ -20,7 +20,6 @@ export class CodeState {
     public CODE_ALREADY_INVALID = 3;
 
     public checkCodeTimeIsValid(code: Code): boolean {
-        console.log(code);
         const currentTime = Math.floor(new Date().getTime() / 1000);
         return (currentTime - code.time) < (24 * 60 * 60);
     }

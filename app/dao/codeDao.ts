@@ -27,8 +27,6 @@ export class CodeDao {
 
     updateCodeState(id: number, codeState: number): Promise<any> {
         const sql = 'update t_code set state = ? where id = ?';
-        console.log(id);
-        console.log(codeState);
         return this.sqlPool.runSql(sql, [codeState, id]);
     }
 
