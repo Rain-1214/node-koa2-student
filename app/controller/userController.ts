@@ -103,6 +103,7 @@ export class UserController {
             ctx.response.body = new AjaxResult(0, res);
         } else {
             ctx.session.forgetPass = { id: res.id, email: res.email };
+            this.log.logMessage(`忘记密码的用户ID和邮箱${res.id},${res.email}`);
             const returnEmail = this.encryption.encryptEmail(res.email);
             ctx.state = 200;
             ctx.response.body = new AjaxResult(1, 'success', returnEmail);
@@ -113,6 +114,7 @@ export class UserController {
     public async checkForgetPassCode(ctx: koa.Context, next: () => Promise<any>) {
         const code = ctx.request.body.code;
         const email = ctx.session.forgetPass.email;
+        this.log.logMessage(`忘记密码用户的验证码和邮箱${code},${email}`);
         const res = await this.userService.checkCodeRight(email, code);
         const resultState = res === 'success' ? 1 : 0;
         ctx.state = 200;
@@ -123,7 +125,7 @@ export class UserController {
     public async setNewPass(ctx: koa.Context, next: () => Promise<any>) {
         const password = ctx.request.body.password;
         const forgetPassUserId = ctx.session.forgetPass.id;
-        console.log(password, forgetPassUserId);
+        this.log.logMessage(`忘记密码的用户的ID和修改的新密码${forgetPassUserId},${password}`);
         if (!forgetPassUserId) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'not find userId');

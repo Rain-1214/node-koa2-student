@@ -4,6 +4,7 @@ import { Inject, Dao } from '../entity/inject';
 import { Student } from '../entity/student';
 import { Grade } from '../entity/grade';
 import { ClassNum } from '../entity/class';
+import { CommonSql } from '../entity/commonSql';
 
 @Dao()
 export class StudentDao {
@@ -11,9 +12,17 @@ export class StudentDao {
     @Inject('MysqlPoolManage')
     private sqyPool: MysqlPoolManage;
 
+    @Inject('CommonSql')
+    private commonSql: CommonSql;
+
     getStudent(page: number, itemNumber: number): Promise<Student[]> {
         const sql = 'select * from t_student order by id limit ?,?';
         return this.sqyPool.runSql(sql, [page, itemNumber]);
+    }
+
+    getStudentCountNum(): Promise<{countNum: number}[]> {
+        const countSql = this.commonSql.count('t_student');
+        return this.sqyPool.runSql(countSql);
     }
 
     getStudentByClassOrGrade(grade: number, classNum?: number): Promise<Student[]> {

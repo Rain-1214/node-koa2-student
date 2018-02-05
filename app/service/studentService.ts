@@ -4,6 +4,8 @@ import { Student } from '../entity/student';
 import { Grade } from '../entity/grade';
 import { UserState } from '../entity/User';
 import { UserDao } from '../dao/userDao';
+import { LogMessage } from '../entity/log';
+import { CommonSql } from '../entity/commonSql';
 
 @Service()
 export class StudentService {
@@ -16,6 +18,12 @@ export class StudentService {
 
     @Inject('UserState')
     private userState: UserState;
+
+    @Inject('CommonSql')
+    private commonSql: CommonSql;
+
+    @Inject('LogMessage')
+    private log: LogMessage;
 
     async addStudent(uid: number, students: Student[]): Promise<number | string> {
         if (!this.checkUserAuthor(uid, 'add')) {
@@ -45,10 +53,10 @@ export class StudentService {
 
     async getGrade(): Promise<Grade[]> {
         const grades = await this.studentDao.getGrade();
-        grades.forEach(async (e) => {
-            const classes = await this.studentDao.getClassByGradeId(e.id);
-            e.classes = classes;
-        });
+        for (let i = 0; i < grades.length; i++) {
+            const classes = await this.studentDao.getClassByGradeId(grades[i].id);
+            grades[i].classes = classes;
+        }
         return grades;
     }
 
@@ -56,8 +64,11 @@ export class StudentService {
         return this.studentDao.getStudentByClassOrGrade(gradeId, classId);
     }
 
-    async getStudents(page: number): Promise<Student[]> {
-        return this.studentDao.getStudent(page, 8);
+    async getStudents(page: number): Promise<{students: Student[], countNum: number}> {
+        const studentArray = await this.studentDao.getStudent(page, 9);
+        const countNum = await this.studentDao.getStudentCountNum();
+        console.log(countNum);
+        return { students: studentArray, countNum: countNum[0].countNum };
     }
 
     private async checkUserAuthor(userId: number, operationMethod: string): Promise<boolean> {

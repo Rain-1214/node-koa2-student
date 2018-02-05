@@ -4,21 +4,26 @@ import { StudentService } from '../service/studentService';
 import { AjaxResult } from '../entity/ajaxResult';
 import { Student } from '../entity/student';
 import { Verification } from '../entity/verification';
+import { LogMessage } from '../entity/log';
 
 
 @Controller()
 @ResultMapping('/api/student')
 export class StudentController {
 
-    @Inject('StudentServoce')
+    @Inject('StudentService')
     private studentService: StudentService;
 
     @Inject('Verification')
     private verification: Verification;
 
+    @Inject('LogMessage')
+    private log: LogMessage;
+
     @ResultMapping('/getGrade')
     public async getGrade(ctx: koa.Context, next: () => Promise<any>) {
         this.checkUserLogin(ctx);
+        this.log.logMessage(`用户ID为${ctx.session.uid}的用户获取了年级信息`);
         const res = await this.studentService.getGrade();
         ctx.state = 200;
         ctx.response.body = new AjaxResult(1, 'success', res);
@@ -36,8 +41,9 @@ export class StudentController {
     @ResultMapping('/getStudent')
     public async getStudent(ctx: koa.Context, next: () => Promise<any>) {
         this.checkUserLogin(ctx);
-        const page = ctx.query;
+        const page = +ctx.query.page;
         const res = await this.studentService.getStudents(page);
+        console.log(res);
         ctx.state = 200;
         ctx.response.body = new AjaxResult(1, 'success', res);
     }
