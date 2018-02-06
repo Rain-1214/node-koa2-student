@@ -43,7 +43,6 @@ export class StudentController {
         this.checkUserLogin(ctx);
         const page = +ctx.query.page;
         const res = await this.studentService.getStudents(page);
-        console.log(res);
         ctx.state = 200;
         ctx.response.body = new AjaxResult(1, 'success', res);
     }
@@ -63,7 +62,7 @@ export class StudentController {
         this.checkUserLogin(ctx);
         const uid = ctx.session.uid;
         const { id, name, studentNumber, sex, classNum, grade } = ctx.request.body;
-        this.checkParams([id, name, studentNumber, sex, classNum, grade], ctx);
+        this.checkParams([id], ctx);
         const res = await this.studentService.updateStudent(uid, id, name, studentNumber, sex, classNum, grade);
         this.returnResponse(res, ctx);
     }

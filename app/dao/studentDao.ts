@@ -56,6 +56,11 @@ export class StudentDao {
         return this.sqyPool.runSql(sql);
     }
 
+    checkUserNumRepeat(studentNumber: number): Promise<any> {
+        const sql = 'select * from t_student where studentNumber = ?';
+        return this.sqyPool.runSql(sql, [studentNumber]);
+    }
+
     updateStudent(student: Student): Promise<any> {
         if (!student['id']) {
             throw new Error('update student must have id property');

@@ -38,6 +38,10 @@ export class StudentService {
         if (!this.checkUserAuthor(uid, 'update')) {
             return 'Do not have permission';
         }
+        const stuNumRepeat = await this.studentDao.checkUserNumRepeat(studentNumber);
+        if (stuNumRepeat.length > 0) {
+            return '学号重复';
+        }
         const student = new Student(id, name, studentNumber, sex, classNum, grade);
         const res = await this.studentDao.updateStudent(student);
         return res.changedRows;
@@ -65,9 +69,9 @@ export class StudentService {
     }
 
     async getStudents(page: number): Promise<{students: Student[], countNum: number}> {
-        const studentArray = await this.studentDao.getStudent(page, 9);
+        const pageNum = (page - 1) * 9;
+        const studentArray = await this.studentDao.getStudent(pageNum, 9);
         const countNum = await this.studentDao.getStudentCountNum();
-        console.log(countNum);
         return { students: studentArray, countNum: countNum[0].countNum };
     }
 
