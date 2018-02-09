@@ -61,9 +61,9 @@ export class StudentController {
     public async updateStudent(ctx: koa.Context, next: () => Promise<any>) {
         this.checkUserLogin(ctx);
         const uid = ctx.session.uid;
-        const { id, name, studentNumber, sex, classNum, grade } = ctx.request.body;
+        const { id, name, studentNumber, sex, classId, gradeId } = ctx.request.body;
         this.checkParams([id], ctx);
-        const res = await this.studentService.updateStudent(uid, id, name, studentNumber, sex, classNum, grade);
+        const res = await this.studentService.updateStudent(uid, id, name, studentNumber, sex, classId, gradeId);
         this.returnResponse(res, ctx);
     }
 
