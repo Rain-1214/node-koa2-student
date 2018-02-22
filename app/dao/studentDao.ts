@@ -56,7 +56,7 @@ export class StudentDao {
         return this.sqyPool.runSql(sql);
     }
 
-    checkUserNumRepeat(studentNumber: number): Promise<any> {
+    checkStudentNumberRepeat(studentNumber: number): Promise<any> {
         const sql = 'select * from t_student where studentNumber = ?';
         return this.sqyPool.runSql(sql, [studentNumber]);
     }
@@ -65,15 +65,16 @@ export class StudentDao {
         if (!student['id']) {
             throw new Error('update student must have id property');
         }
-        let sql = 'update t_student set';
+        let sql = 'update t_student set ';
         const keys = Object.keys(student);
         keys.forEach((e, i) => {
-            if (student[e]) {
-                sql += `${e} = ${mysql.escape(student[e])} `;
+            if (student[e] && e !== 'id') {
+                sql += `${e} = ${mysql.escape(student[e])}`;
+                sql += i === keys.length - 1 ? '' : ',';
             }
         });
-        sql += `where id = ${mysql.escape(student['id'])}`;
-        return this.sqyPool.runSql(sql);
+        sql += ` where id = ?`;
+        return this.sqyPool.runSql(sql, [ student.id ]);
     }
 
     deleteStudent(ids: number[]): Promise<any> {

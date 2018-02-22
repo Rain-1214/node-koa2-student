@@ -29,6 +29,13 @@ export class StudentService {
         if (!this.checkUserAuthor(uid, 'add')) {
             return 'Do not have permission';
         }
+        for (let i = 0; i < students.length; i++) {
+            const element = students[i];
+            const result = await this.studentDao.checkStudentNumberRepeat(element.studentNumber);
+            if (result.length !== 0) {
+                return '学号重复';
+            }
+        }
         const res = await this.studentDao.addStudent(students);
         return res.affectedRows;
     }
@@ -38,7 +45,7 @@ export class StudentService {
         if (!this.checkUserAuthor(uid, 'update')) {
             return 'Do not have permission';
         }
-        const stuNumRepeat = await this.studentDao.checkUserNumRepeat(studentNumber);
+        const stuNumRepeat = await this.studentDao.checkStudentNumberRepeat(studentNumber);
         if (stuNumRepeat.length > 0) {
             return '学号重复';
         }
@@ -69,8 +76,8 @@ export class StudentService {
     }
 
     async getStudents(page: number): Promise<{students: Student[], countNum: number}> {
-        const pageNum = (page - 1) * 9;
-        const studentArray = await this.studentDao.getStudent(pageNum, 9);
+        const pageNum = (page - 1) * 6;
+        const studentArray = await this.studentDao.getStudent(pageNum, 6);
         const countNum = await this.studentDao.getStudentCountNum();
         return { students: studentArray, countNum: countNum[0].countNum };
     }

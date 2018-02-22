@@ -37,12 +37,13 @@ export class UserDao {
     updateUser(id: number, changeProperty: User): Promise<any> {
         let sql = 'update t_user set ';
         const keys = Object.keys(changeProperty);
-        keys.forEach(e => {
-            if (changeProperty[e]) {
-                sql += `${e} = ${mysql.escape(changeProperty[e])} `;
+        keys.forEach((e, i) => {
+            if (changeProperty[e] && e !== 'id') {
+                sql += `${e} = ${mysql.escape(changeProperty[e])},`;
+                sql += i === keys.length - 1 ? '' : ',';
             }
         });
-        sql += `where id = ?`;
+        sql += ` where id = ?`;
         return this.mysqlManage.runSql(sql, [id]);
     }
 

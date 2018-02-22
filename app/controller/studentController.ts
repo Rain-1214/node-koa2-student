@@ -79,14 +79,16 @@ export class StudentController {
 
     private returnResponse(res: string | number, ctx: koa.Context) {
         if (typeof res === 'string') {
+            console.log(res);
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, res);
         } else if (res === 0) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'add student fail');
+        } else {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(1, 'success');
         }
-        ctx.state = 200;
-        ctx.response.body = new AjaxResult(1, 'success');
     }
 
     private checkUserLogin(ctx: koa.Context) {
