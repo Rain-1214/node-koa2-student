@@ -52,6 +52,8 @@ export class StudentController {
         this.checkUserLogin(ctx);
         const uid = ctx.session.uid;
         const students: Student[] = ctx.request.body.students;
+        this.log.logMessage(`添加的学生为：`);
+        this.log.logMessage(students);
         this.checkParams(students, ctx);
         const res = await this.studentService.addStudent(uid, students);
         this.returnResponse(res, ctx);

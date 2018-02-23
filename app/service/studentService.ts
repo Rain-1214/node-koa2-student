@@ -31,6 +31,9 @@ export class StudentService {
         }
         for (let i = 0; i < students.length; i++) {
             const element = students[i];
+            if (this.checkEmptyProperty(students[i])) {
+                return '信息不完整';
+            }
             const result = await this.studentDao.checkStudentNumberRepeat(element.studentNumber);
             if (result.length !== 0) {
                 return '学号重复';
@@ -88,6 +91,13 @@ export class StudentService {
             return false;
         }
         return this.userState.checkAuthor('student', operationMethod, user[0].authorization);
+    }
+
+    private checkEmptyProperty(obj: any): boolean {
+        const keys = Object.keys(obj);
+        return keys.some((e) => {
+            return obj[e] === undefined || obj[e] === null;
+        });
     }
 
 }

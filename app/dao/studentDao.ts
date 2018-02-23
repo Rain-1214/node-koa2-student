@@ -48,8 +48,8 @@ export class StudentDao {
     addStudent(students: Student[]): Promise<any> {
         let sql = 'insert into t_student values';
         students.forEach((e, i) => {
-            sql += `(null,${mysql.escape(e.name)},${mysql.escape(e.studentNumber)}
-            ${mysql.escape(e.sex)},${mysql.escape(e.classId)},${mysql.escape(e.gradeId)})`;
+            // tslint:disable-next-line:max-line-length
+            sql += `(null,${mysql.escape(e.name)},${mysql.escape(e.studentNumber)},${mysql.escape(e.sex)},${mysql.escape(e.classId)},${mysql.escape(e.gradeId)})`;
             sql += i === students.length - 1 ? '' : ',';
         });
         sql = sql.replace(/undefinde/g, 'null');
