@@ -54,7 +54,10 @@ export class StudentController {
         const students: Student[] = ctx.request.body.students;
         this.log.logMessage(`添加的学生为：`);
         this.log.logMessage(students);
-        this.checkParams(students, ctx);
+        if (students.length <= 0) {
+            this.returnResponse('添加的学生为空', ctx);
+        }
+        this.checkParams(ctx, students);
         const res = await this.studentService.addStudent(uid, students);
         this.returnResponse(res, ctx);
     }
@@ -64,7 +67,7 @@ export class StudentController {
         this.checkUserLogin(ctx);
         const uid = ctx.session.uid;
         const { id, name, studentNumber, sex, classId, gradeId } = ctx.request.body;
-        this.checkParams([id], ctx);
+        this.checkParams(ctx, id);
         const res = await this.studentService.updateStudent(uid, id, name, studentNumber, sex, classId, gradeId);
         this.returnResponse(res, ctx);
     }
@@ -74,7 +77,7 @@ export class StudentController {
         this.checkUserLogin(ctx);
         const uid = ctx.session.uid;
         const { id } = ctx.request.body;
-        this.checkParams([ id ], ctx);
+        this.checkParams(ctx, id);
         const res = await this.studentService.deleteStudent(uid, id);
         this.returnResponse(res, ctx);
     }
@@ -101,10 +104,10 @@ export class StudentController {
         }
     }
 
-    private checkParams(params: any, ctx: koa.Context) {
+    private checkParams(ctx: koa.Context, ...params: any[]) {
         if (params.some(e => {
-            const value = Object.values(e);
-            return this.verification.require(value);
+            const value = typeof e === 'object' ? Object.values(e) : e;
+            return !this.verification.require(value);
         })) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'invalid arguments');

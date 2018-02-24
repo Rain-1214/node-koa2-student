@@ -10,6 +10,9 @@ export class Verification {
     }
 
     require(...arg: any[]): boolean {
+        if (arg.length <= 0) {
+            return false;
+        }
         return arg.every((e) => {
            return e !== null && e !== undefined && e !== '';
         });
