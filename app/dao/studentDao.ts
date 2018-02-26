@@ -78,10 +78,10 @@ export class StudentDao {
     }
 
     deleteStudent(ids: number[]): Promise<any> {
-        let sql = 'delete from t_student where id = ';
+        let sql = 'delete from t_student where';
         ids.forEach((e, i) => {
-            sql += mysql.escape(e);
-            sql += i === ids.length ? '' : ' or ';
+            sql += ` id = ${mysql.escape(e)}`;
+            sql += i === ids.length - 1 ? '' : ' or';
         });
         return this.sqyPool.runSql(sql);
     }

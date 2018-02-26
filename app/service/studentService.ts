@@ -31,7 +31,7 @@ export class StudentService {
         }
         for (let i = 0; i < students.length; i++) {
             const element = students[i];
-            if (this.checkEmptyProperty(students[i])) {
+            if (this.checkEmptyProperty(students[i], [ 'name', 'studentNumber', 'sex', 'classId', 'gradeId' ])) {
                 return '信息不完整';
             }
             const result = await this.studentDao.checkStudentNumberRepeat(element.studentNumber);
@@ -93,8 +93,8 @@ export class StudentService {
         return this.userState.checkAuthor('student', operationMethod, user[0].authorization);
     }
 
-    private checkEmptyProperty(obj: any): boolean {
-        const keys = Object.keys(obj);
+    private checkEmptyProperty(obj: any, checkProperty?: string[]): boolean {
+        const keys = checkProperty || Object.keys(obj);
         return keys.some((e) => {
             return obj[e] === undefined || obj[e] === null;
         });

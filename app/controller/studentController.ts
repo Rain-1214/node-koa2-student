@@ -22,7 +22,9 @@ export class StudentController {
 
     @ResultMapping('/getGrade')
     public async getGrade(ctx: koa.Context, next: () => Promise<any>) {
-        this.checkUserLogin(ctx);
+        if (!this.checkUserLogin(ctx)) {
+            return;
+        }
         this.log.logMessage(`用户ID为${ctx.session.uid}的用户获取了年级信息`);
         const res = await this.studentService.getGrade();
         ctx.state = 200;
@@ -31,7 +33,9 @@ export class StudentController {
 
     @ResultMapping('/getStuBygidcid', 'POST')
     public async getStudentByGradeAndClass(ctx: koa.Context, next: () => Promise<any>) {
-        this.checkUserLogin(ctx);
+        if (!this.checkUserLogin(ctx)) {
+            return;
+        }
         const { gradeId, classId } = ctx.request.body;
         const res = await this.studentService.getStudentByGradeAndClass(gradeId, classId);
         ctx.state = 200;
@@ -40,7 +44,9 @@ export class StudentController {
 
     @ResultMapping('/getStudent')
     public async getStudent(ctx: koa.Context, next: () => Promise<any>) {
-        this.checkUserLogin(ctx);
+        if (!this.checkUserLogin(ctx)) {
+            return;
+        }
         const page = +ctx.query.page;
         const res = await this.studentService.getStudents(page);
         ctx.state = 200;
@@ -49,7 +55,9 @@ export class StudentController {
 
     @ResultMapping('/addStudent', 'PUT')
     public async addStudent(ctx: koa.Context, next: () => Promise<any>) {
-        this.checkUserLogin(ctx);
+        if (!this.checkUserLogin(ctx)) {
+            return;
+        }
         const uid = ctx.session.uid;
         const students: Student[] = ctx.request.body.students;
         this.log.logMessage(`添加的学生为：`);
@@ -57,14 +65,18 @@ export class StudentController {
         if (students.length <= 0) {
             this.returnResponse('添加的学生为空', ctx);
         }
-        this.checkParams(ctx, students);
+        if (!this.checkParams(ctx, students)) {
+            return;
+        }
         const res = await this.studentService.addStudent(uid, students);
         this.returnResponse(res, ctx);
     }
 
     @ResultMapping('/updateStudent', 'POST')
     public async updateStudent(ctx: koa.Context, next: () => Promise<any>) {
-        this.checkUserLogin(ctx);
+        if (!this.checkUserLogin(ctx)) {
+            return;
+        }
         const uid = ctx.session.uid;
         const { id, name, studentNumber, sex, classId, gradeId } = ctx.request.body;
         this.checkParams(ctx, id);
@@ -72,13 +84,17 @@ export class StudentController {
         this.returnResponse(res, ctx);
     }
 
-    @ResultMapping('/deleyeStudeny', 'DELETE')
+    @ResultMapping('/deleteStudent', 'POST')
     public async deleteStudent(ctx: koa.Context, next: () => Promise<any>) {
-        this.checkUserLogin(ctx);
+        if (!this.checkUserLogin(ctx)) {
+            return;
+        }
         const uid = ctx.session.uid;
-        const { id } = ctx.request.body;
-        this.checkParams(ctx, id);
-        const res = await this.studentService.deleteStudent(uid, id);
+        const ids: number[] = ctx.request.body.ids;
+        if (!this.checkParams(ctx, ids)) {
+            return;
+        }
+        const res = await this.studentService.deleteStudent(uid, ids);
         this.returnResponse(res, ctx);
     }
 
@@ -96,12 +112,14 @@ export class StudentController {
         }
     }
 
-    private checkUserLogin(ctx: koa.Context) {
+    private checkUserLogin(ctx: koa.Context): boolean {
         const uid = ctx.session.uid;
         if (!uid) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'Lack of essential property');
+            return false;
         }
+        return true;
     }
 
     private checkParams(ctx: koa.Context, ...params: any[]) {
@@ -111,7 +129,9 @@ export class StudentController {
         })) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'invalid arguments');
+            return false;
         }
+        return true;
     }
 
 }
