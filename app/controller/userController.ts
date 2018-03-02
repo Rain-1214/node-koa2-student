@@ -2,7 +2,7 @@ import * as koa from 'koa';
 import { ResultMapping, Inject, Controller } from '../entity/inject';
 import { UserService } from '../service/userService';
 import { AjaxResult } from '../entity/ajaxResult';
-import { User } from '../entity/User';
+import { User, UserState } from '../entity/User';
 import { Email } from '../entity/email';
 import { Verification } from '../entity/verification';
 import { Encryption } from '../entity/encryption';
@@ -24,6 +24,9 @@ export class UserController {
     @Inject('LogMessage')
     private log: LogMessage;
 
+    @Inject('UserState')
+    private userState: UserState;
+
     @ResultMapping('/login', 'POST')
     public async login(ctx: koa.Context, next: () => Promise<any>) {
         const { username, password } = ctx.request.body;
@@ -36,9 +39,10 @@ export class UserController {
             ctx.response.body = new AjaxResult(0, res);
         } else {
             const uid = res.id;
+            const userRole = this.userState.getUserRole(res.authorization);
             ctx.state = 200;
             ctx.session.uid = res.id;
-            ctx.response.body = new AjaxResult(1, 'success');
+            ctx.response.body = new AjaxResult(1, 'success', { userRole });
         }
     }
 
@@ -78,12 +82,13 @@ export class UserController {
         }
         const res = await this.userService.register(username, password, email, code);
         const resultState = typeof res === 'number' ? 1 : 0;
+        const author = typeof res === 'number' ? this.userState.AUTHOR_VISITOR : null;
         if (resultState) {
             ctx.session.uid = res;
             this.log.logMessage(`新用户ID：${ctx.session.uid}`);
         }
         ctx.state = 200;
-        ctx.response.body = new AjaxResult(resultState, res);
+        ctx.response.body = new AjaxResult(resultState, res, { userRole: author });
     }
 
     @ResultMapping('/getUser')
@@ -101,8 +106,16 @@ export class UserController {
             return;
         }
         const res = await this.userService.getUser(userId, page, itemNumber);
-        ctx.state = 200;
-        ctx.response.body = new AjaxResult(1, 'success', res);
+        if (typeof res === 'string') {
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(0, res);
+        } else {
+            res.users.forEach((user) => {
+                delete user.password;
+            });
+            ctx.state = 200;
+            ctx.response.body = new AjaxResult(1, 'success', res);
+        }
     }
 
     @ResultMapping('/forgetPass', 'POST')

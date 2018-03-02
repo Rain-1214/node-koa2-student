@@ -39,6 +39,10 @@ export class UserState {
         5: 'visitor',
     };
 
+    getUserRole(author: number): string {
+        return this.Author[author];
+    }
+
 
     findAuthor(author: number): { currentAuthor: number, nextAuthor: number, prevAuthor: number } {
 
