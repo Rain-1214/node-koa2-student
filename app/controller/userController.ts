@@ -82,7 +82,7 @@ export class UserController {
         }
         const res = await this.userService.register(username, password, email, code);
         const resultState = typeof res === 'number' ? 1 : 0;
-        const author = typeof res === 'number' ? this.userState.AUTHOR_VISITOR : null;
+        const author = typeof res === 'number' ? '游客' : null;
         if (resultState) {
             ctx.session.uid = res;
             this.log.logMessage(`新用户ID：${ctx.session.uid}`);

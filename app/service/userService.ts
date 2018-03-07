@@ -123,7 +123,8 @@ export class UserService {
         const changePropertyUser = new User(null, null, null, null, authObject.nextAuthor);
         const res = await this.userDao.updateUser(id, changePropertyUser);
         if (res.changedRows === 1) {
-            return 'success';
+            const afterChangeAuthor = this.userState.getUserRole(authObject.nextAuthor);
+            return afterChangeAuthor;
         } else {
             return 'fail';
         }

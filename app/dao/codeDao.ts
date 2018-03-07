@@ -21,7 +21,7 @@ export class CodeDao {
     }
 
     getCodeByEmailAndState(email: string, state: number): Promise<Code[]> {
-        const sql = 'select * from t_code where email = ? and state = ?';
+        const sql = 'select * from t_code where binary email = ? and state = ?';
         return this.sqlPool.runSql(sql, [email, state]);
     }
 

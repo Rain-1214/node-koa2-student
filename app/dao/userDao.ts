@@ -20,7 +20,7 @@ export class UserDao {
     }
 
     getUserByUsername(username: string): Promise<User[]> {
-        const sql = 'select * from t_user where username = ?';
+        const sql = 'select * from t_user where binary username = ?';
         return this.mysqlManage.runSql(sql, [username]);
     }
 
@@ -37,12 +37,15 @@ export class UserDao {
     updateUser(id: number, changeProperty: User): Promise<any> {
         let sql = 'update t_user set ';
         const keys = Object.keys(changeProperty);
+        console.log(keys);
         keys.forEach((e, i) => {
             if (changeProperty[e] && e !== 'id') {
+                console.log(e);
+                console.log(i);
                 sql += `${e} = ${mysql.escape(changeProperty[e])},`;
-                sql += i === keys.length - 1 ? '' : ',';
             }
         });
+        sql = sql.slice(0, -1);
         sql += ` where id = ?`;
         return this.mysqlManage.runSql(sql, [id]);
     }
