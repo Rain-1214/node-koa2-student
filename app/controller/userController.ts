@@ -56,7 +56,7 @@ export class UserController {
             return;
         }
         this.log.logMessage(`用户ID${ctx.session.uid}登出`);
-        delete ctx.sessiond.uid;
+        delete ctx.session.uid;
         ctx.state = 200;
         ctx.response.body = new AjaxResult(1, 'success');
     }
@@ -110,9 +110,6 @@ export class UserController {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, res);
         } else {
-            res.users.forEach((user) => {
-                delete user.password;
-            });
             ctx.state = 200;
             ctx.response.body = new AjaxResult(1, 'success', res);
         }
@@ -195,7 +192,7 @@ export class UserController {
     @ResultMapping('/activeUser', 'POST')
     public async activeUser(ctx: koa.Context, next: () => Promise<any>) {
         const activeUserId = ctx.request.body.userId;
-        if (this.checkParams(ctx, activeUserId)) {
+        if (!this.checkParams(ctx, activeUserId)) {
             return;
         }
         const uid = ctx.session.uid;
@@ -204,7 +201,7 @@ export class UserController {
             ctx.response.body = new AjaxResult(0, 'Lack of essential property');
             return;
         }
-        const res = await this.userService.activeedUser(uid, activeUserId);
+        const res = await this.userService.activedUser(uid, activeUserId);
         const resultState = res === 'success' ? 1 : 0;
         ctx.state = 200;
         ctx.response.body = new AjaxResult(resultState, res);
@@ -226,6 +223,7 @@ export class UserController {
     @ResultMapping('/leaveUpUser', 'POST')
     public async leaveUpUserAuthor(ctx: koa.Context, next: () => Promise<any>) {
         const uid = ctx.session.uid;
+        console.log(uid)
         if (!uid) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'Lack of essential property');

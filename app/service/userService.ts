@@ -117,6 +117,7 @@ export class UserService {
         const user = await this.userDao.getUserById(id);
         const currentAuth = user[0].authorization;
         const authObject = this.userState.findAuthor(currentAuth);
+        console.log(authObject)
         if (!authObject.nextAuthor) {
             return '您的权限已经是最高级别';
         }
@@ -135,6 +136,16 @@ export class UserService {
         if (typeof checkUserAuthorRes === 'string') {
             return checkUserAuthorRes;
         }
+        const user = await this.userDao.getUserById(disableUserId);
+        if (user.length === 0) {
+            return '没有找到目标用户';
+        }
+        if (user[0].userState === this.userState.USER_ALREADY_DEACTIVATED) {
+            return '目标用户已被封';
+        }
+        if (user[0].authorization === this.userState.AUTHOR_ROOT) {
+            return '目标用户不可封';
+        }
         const changePropertyUser = new User(null, null, null, null, null, this.userState.USER_ALREADY_DEACTIVATED);
         const res = await this.userDao.updateUser(disableUserId, changePropertyUser);
         if (res.changedRows === 1) {
@@ -144,10 +155,17 @@ export class UserService {
         }
     }
 
-    async activeedUser(userId: number, changeUserId: number): Promise<string> {
+    async activedUser(userId: number, changeUserId: number): Promise<string> {
         const checkUserAuthorRes = await this.checkUserAuthor(userId);
         if (typeof checkUserAuthorRes === 'string') {
             return checkUserAuthorRes;
+        }
+        const user = await this.userDao.getUserById(changeUserId);
+        if (user.length === 0) {
+            return '没有找到目标用户';
+        }
+        if (user[0].userState === this.userState.USER_CAN_USE) {
+            return '目标用户不处于封号状态';
         }
         const changePropertyUser = new User(null, null, null, null, null, this.userState.USER_CAN_USE);
         const res = await this.userDao.updateUser(changeUserId, changePropertyUser);

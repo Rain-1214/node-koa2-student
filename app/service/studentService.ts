@@ -26,7 +26,7 @@ export class StudentService {
     private log: LogMessage;
 
     async addStudent(uid: number, students: Student[]): Promise<number | string> {
-        if (!this.checkUserAuthor(uid, 'add')) {
+        if (!await this.checkUserAuthor(uid, 'add')) {
             return 'Do not have permission';
         }
         for (let i = 0; i < students.length; i++) {
@@ -45,7 +45,7 @@ export class StudentService {
 
     async updateStudent(uid: number, id: number, name: string, studentNumber: number,
                         sex: number, classNum: number, grade: number): Promise<number | string> {
-        if (!this.checkUserAuthor(uid, 'update')) {
+        if (!await this.checkUserAuthor(uid, 'update')) {
             return 'Do not have permission';
         }
         const stuNumRepeat = await this.studentDao.checkStudentNumberRepeat(studentNumber);
@@ -58,7 +58,7 @@ export class StudentService {
     }
 
     async deleteStudent(uid: number, ids: number[]): Promise<number | string> {
-        if (!this.checkUserAuthor(uid, 'delete')) {
+        if (!await this.checkUserAuthor(uid, 'delete')) {
             return 'Do not have permission';
         }
         const res = await this.studentDao.deleteStudent(ids);
@@ -90,6 +90,7 @@ export class StudentService {
         if (user.length === 0) {
             return false;
         }
+        console.log(1);
         return this.userState.checkAuthor('student', operationMethod, user[0].authorization);
     }
 

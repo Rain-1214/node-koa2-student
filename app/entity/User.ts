@@ -49,9 +49,10 @@ export class UserState {
         let currentAuthor, nextAuthor, prevAuthor;
         const tempArray = Object.keys(this.Author).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
         tempArray.forEach((e, i) => {
+            const intE = parseInt(e, 10);
             prevAuthor = i === 0 ? null : this.Author[tempArray[i - 1]];
-            if (this.Author[e] === author) {
-                currentAuthor = this.Author[e];
+            if (this.Author[intE] === author) {
+                currentAuthor = this.Author[intE];
                 nextAuthor = i === tempArray.length - 1 ? null : this.Author[tempArray[i + 1]];
             }
         });
@@ -63,6 +64,8 @@ export class UserState {
         if (!operationTable) {
             throw new Error('check author: operationTable is require');
         }
+        console.log(author);
+        console.log(this.Operation_Author[operationTable][operationMehtod]);
         return author >= this.Operation_Author[operationTable][operationMehtod];
     }
 
