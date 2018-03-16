@@ -113,19 +113,17 @@ export class UserService {
         }
     }
 
-    async userLeaveUp(id: number): Promise<string> {
+    async userLeaveUp(id: number): Promise<string | number> {
         const user = await this.userDao.getUserById(id);
         const currentAuth = user[0].authorization;
         const authObject = this.userState.findAuthor(currentAuth);
-        console.log(authObject)
         if (!authObject.nextAuthor) {
             return '您的权限已经是最高级别';
         }
         const changePropertyUser = new User(null, null, null, null, authObject.nextAuthor);
         const res = await this.userDao.updateUser(id, changePropertyUser);
         if (res.changedRows === 1) {
-            const afterChangeAuthor = this.userState.getUserRole(authObject.nextAuthor);
-            return afterChangeAuthor;
+            return authObject.nextAuthor;
         } else {
             return 'fail';
         }

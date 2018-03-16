@@ -48,12 +48,13 @@ export class UserState {
 
         let currentAuthor, nextAuthor, prevAuthor;
         const tempArray = Object.keys(this.Author).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+        console.log(tempArray);
         tempArray.forEach((e, i) => {
             const intE = parseInt(e, 10);
-            prevAuthor = i === 0 ? null : this.Author[tempArray[i - 1]];
-            if (this.Author[intE] === author) {
-                currentAuthor = this.Author[intE];
-                nextAuthor = i === tempArray.length - 1 ? null : this.Author[tempArray[i + 1]];
+            prevAuthor = i === 0 ? null : Number.parseInt(tempArray[i - 1], 10);
+            if (intE === author) {
+                currentAuthor = intE;
+                nextAuthor = i === tempArray.length - 1 ? null : Number.parseInt(tempArray[i + 1], 10);
             }
         });
         return { currentAuthor, nextAuthor, prevAuthor };

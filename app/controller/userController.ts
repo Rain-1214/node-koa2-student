@@ -223,16 +223,22 @@ export class UserController {
     @ResultMapping('/leaveUpUser', 'POST')
     public async leaveUpUserAuthor(ctx: koa.Context, next: () => Promise<any>) {
         const uid = ctx.session.uid;
-        console.log(uid)
         if (!uid) {
             ctx.state = 200;
             ctx.response.body = new AjaxResult(0, 'Lack of essential property');
             return;
         }
         const res = await this.userService.userLeaveUp(uid);
-        const resultState = res === 'success' ? 1 : 0;
+        let resultState = 0;
+        let data = null;
+        const message = typeof res === 'string' ? res : 'success';
+        if (typeof res === 'number') {
+            resultState = 1;
+            const afterChangeAuth = this.userState.getUserRole(res);
+            data = { newAuth: afterChangeAuth };
+        }
         ctx.state = 200;
-        ctx.response.body = new AjaxResult(resultState, res);
+        ctx.response.body = new AjaxResult(resultState, message, data);
     }
 
     private checkParams(ctx: koa.Context, ...params: any[]): boolean {

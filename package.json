@@ -30,6 +30,7 @@
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
     "koa-session-minimal": "^3.0.4",
+    "koa-views": "^6.1.4",
     "mysql": "^2.15.0",
     "nodemailer": "^4.4.1"
   }
